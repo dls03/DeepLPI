@@ -7,7 +7,7 @@ Long   non-coding   RNAs   (lncRNAs)   regulate   diversebiological   processes 
 
 ### Installation and recommendation: 
 - Install [Keras](https://keras.io/) with [TensorFlow](https://keras.io/backend/) backend.
-- Use python 2.7.5
+- Use Python 2.7.5
 
 ### Python Scripts:
 - deepLPI.py
