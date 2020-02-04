@@ -40,7 +40,7 @@ Long   non-coding   RNAs   (lncRNAs)   regulate   diversebiological   processes 
 
 
 ### Run deepLPI:
-python deepLPI.py --dataset merged_lncRNA_protein --dataset_struct merged_struct_lncRNA_protein
+python deepLPI.py --dataset merged_lncRNA_protein_mini --dataset_struct merged_struct_lncRNA_protein_mini
 
 
 
