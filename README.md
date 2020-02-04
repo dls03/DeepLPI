@@ -10,33 +10,33 @@ Long   non-coding   RNAs   (lncRNAs)   regulate   diversebiological   processes 
 - Use python 2.7.5
 
 ### Python Scripts:
-deepLPI.py
-- Model file
+- deepLPI.py
+  - Model file
 
-lncRNA_mRNA.py
-- Process and merge lncRNA and isoform sequence data.
+- lncRNA_mRNA.py
+  - Process and merge lncRNA and isoform sequence data.
 
-lncRNA_mRNA_struct.py
-- Process and merge lncRNA and isoform structure data.
+- lncRNA_mRNA_struct.py
+  - Process and merge lncRNA and isoform structure data.
 
-crf.py
-- Conditional random field optimization tool initially developed in [DIFFUSE: predicting isoform functions from sequences and expression profiles via deep learning](https://doi.org/10.1093/bioinformatics/btz367) 
+- crf.py
+  - Conditional random field optimization tool initially developed in [DIFFUSE: predicting isoform functions from sequences and expression profiles via deep learning](https://doi.org/10.1093/bioinformatics/btz367) 
 
-mil_nets/
-- Codes from MINN with modifications to use in deepLPI project : [Revisiting Multiple Instance Neural Networks](http://mclab.eic.hust.edu.cn/~xwang/index.htm), By Xinggang Wang
-- Convert the dataset to use as input of MIL framework
-- Scripts for MIL learning
+- mil_nets/
+  - Codes from MINN with modifications to use in deepLPI project : [Revisiting Multiple Instance Neural Networks](http://mclab.eic.hust.edu.cn/~xwang/index.htm), By Xinggang Wang
+  - Convert the dataset to use as input of MIL framework  
+  - Scripts for MIL learning
 
 
 ### Data:
-dataset/
-- Contain the merged data of lncRNAs and proteins.
+- dataset/
+  - Contain the merged data of lncRNAs and proteins.
 
-lncRNA_expression_data.txt
-- lncRNA expression data small version.
+- lncRNA_expression_data.txt
+  - lncRNA expression data small version.
 
-refseqid_isoform_expression.txt
-- isoform expression data small version.
+- refseqid_isoform_expression.txt
+  - isoform expression data small version.
 
 
 ### Run deepLPI:
