@@ -14,10 +14,10 @@ Long   non-coding   RNAs   (lncRNAs)   regulate   diversebiological   processes 
   - Model file
 
 - lncRNA_mRNA.py
-  - Process and merge lncRNA and isoform sequence data.
+  - Process and merge lncRNA and isoform sequence data
 
 - lncRNA_mRNA_struct.py
-  - Process and merge lncRNA and isoform structure data.
+  - Process and merge lncRNA and isoform structure data
 
 - crf.py
   - Conditional random field optimization tool initially developed in [DIFFUSE: predicting isoform functions from sequences and expression profiles via deep learning](https://doi.org/10.1093/bioinformatics/btz367) 
@@ -30,13 +30,13 @@ Long   non-coding   RNAs   (lncRNAs)   regulate   diversebiological   processes 
 
 ### Data:
 - dataset/
-  - Contain the merged data of lncRNAs and proteins.
+  - Contain the merged data of lncRNAs and proteins
 
 - lncRNA_expression_data.txt
-  - lncRNA expression data small version.
+  - lncRNA expression data small version
 
-- refseqid_isoform_expression.txt
-  - isoform expression data small version.
+- isoform_expression_data.txt
+  - isoform expression data small version
 
 
 ### Run deepLPI:
