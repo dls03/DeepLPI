@@ -26,7 +26,11 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
 
 ### Prediction using deepLPI:
 - Run the script ./demo.sh to generate predictions for the test data. You can change the interaction pair in this script to another one with a pre-trained model.
+- The output will report the prediction result of query interaction. 
 
+### Train deepLPI:
+- Run the script ./train.sh for training new model. You can change the dataset in the script to another one.
+- The output will report the average performance in terms of AUC and AUPRC, over 5-fold cross validation.
 
 
 
