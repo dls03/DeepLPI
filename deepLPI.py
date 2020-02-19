@@ -111,7 +111,7 @@ def visulize_saliency(model, lncRNA_b, mRNA_b, label_b):
     
 
     for modifier in ['guided', 'relu']:
-        model.summary()
+        #model.summary()
         grads = visualize_saliency(model, layer_idx, filter_indices=class_idx, seed_input=lncRNA_b, backprop_modifier=modifier)
         plt.figure()
         plt.title(modifier)
@@ -420,7 +420,7 @@ def deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len,
     num_batch = len(train_set)
     all_auc=[]
     all_auprc=[]
-    iso_expr_data_all=get_expr_data("refseqid_isoform_expression.txt")
+    iso_expr_data_all=get_expr_data("isoform_expression_data.txt")
     lnc_expr_data_all=get_expr_data("lncRNA_expression_data.txt")
     lncRNA_feature_colum=188 #small dataset    
     for epoch in range(args.max_epoch):
@@ -566,7 +566,7 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
     num_batch = len(train_set)
     all_auc=[]
     all_auprc=[]
-    iso_expr_data_all=get_expr_data("refseqid_isoform_expression.txt")
+    iso_expr_data_all=get_expr_data("isoform_expression_data.txt")
     lnc_expr_data_all=get_expr_data("lncRNA_expression_data.txt")
     lncRNA_feature_colum=188 #small dataset    
     
@@ -589,7 +589,7 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
     # or, for Sequential:
     #model = Sequential.from_config(config)
     
-    model.save('model_deepLPI.h5')
+    model.save('model_deepLPI2.h5')
     
     return test_acc, np.mean(all_auc), np.mean(all_auprc)
 
