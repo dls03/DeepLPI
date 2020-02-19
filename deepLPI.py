@@ -671,7 +671,7 @@ def interactiontest(args):
     dataset_struct = load_dataset(args.dataset_struct, 2, args.lncRNA_len, args.mRNA_len)
     
     bagdict={}
-    for ifold in range(n_folds):
+    for ifold in range(2):
         bagdict = deepLPI_unit(dataset[ifold], dataset_struct[ifold], bagdict, args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
 
     model=loadmodel(args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
@@ -716,9 +716,9 @@ if __name__ == '__main__':
     dataset = load_dataset(args.dataset, n_folds, args.lncRNA_len, args.mRNA_len)
     dataset_struct = load_dataset(args.dataset_struct, n_folds, args.lncRNA_len, args.mRNA_len)
     
-    if(args.intersection=='NULL'):
+    if(args.interaction=='NULL'):
         train(args)
-    else 
+    else: 
         interactiontest(args)
     
 
