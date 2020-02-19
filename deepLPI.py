@@ -130,7 +130,7 @@ def precision_cal(y_list, p_list):
 def get_expr_data(filename):
     mRNA_exp_dict={}
     mRNA_reader = csv.reader(open(filename, "r"))
-    #print(mRNA_reader)
+    print(mRNA_reader)
     for mRNAs in mRNA_reader:
         mRNA_exp_dict[mRNAs[0].split('.')[0]] = [float(mRNAs[1])]
         for i in range(len(mRNAs)-2):
@@ -175,6 +175,7 @@ def model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
     dropout = Dropout(0.5)(x)
 
     sp = Score_pooling(output_dim=1, kernel_regularizer=l2(args.weight_decay), pooling_mode=args.pooling_mode, name='score_pooling')(dropout)
+    #sp = Activation('sigmoid')(sp)
     model = Model(inputs=[tweet_a, tweet_b, tweet_c, tweet_d], outputs=[sp])
     model.summary()
     sgd = SGD(lr=args.init_lr, decay=1e-4, momentum=args.momentum, nesterov=True)
@@ -205,7 +206,7 @@ def parse_args():
                         default=0.9, type=float)
     parser.add_argument('--epoch', dest='max_epoch',
                         help='number of epoch to train',
-                        default=50, type=int)
+                        default=10, type=int)
     parser.add_argument('--lncRNA_len', dest='lncRNA_len',
                         help='length of lncRNA',
                         default=300, type=int)
@@ -218,7 +219,9 @@ def parse_args():
     parser.add_argument('--mRNA_struct_len', dest='mRNA_struct_len',
                         help='length of mRNA',
                         default=300, type=int)
-
+    parser.add_argument('--interaction', dest='interaction',
+                        help='lncRNA-mRNA pair',
+                        default='NULL', type=str)
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -247,12 +250,42 @@ def test_deepLPI(model, test_set, test_mRNA_set, test_lncRNA_set, test_set_str, 
         y_p_all.append(np.max(y_pred_keras))
         y_l_all.append(np.max(y_test))
         result = model.test_on_batch([test_lncRNA_set[ibatch][0], test_mRNA_set[ibatch][0] , test_lncRNA_set_str[ibatch][0], test_mRNA_set_str[ibatch][0] ], test_lncRNA_set[ibatch][1])
+        #print(test_bags_nm[ibatch], y_pred_keras, y_test, result)
         test_loss[ibatch] = result[0]
         test_acc[ibatch] = result[1]
     auc_keras=roc_auc_score(y_l_all, y_p_all)
     prauc=precision_cal(y_l_all, y_p_all)
     return np.mean(test_loss), np.mean(test_acc), auc_keras, prauc
 
+#TUG1-BTG3
+
+
+
+def unit_test_deepLPI(model, test_set, test_mRNA_set, test_lncRNA_set, test_set_str, test_mRNA_set_str, test_lncRNA_set_str, test_bags_nm, test_ins_nm):
+    num_test_batch = len(test_set)
+    num_test_mRNA_batch = len(test_mRNA_set)
+    test_loss = np.zeros((num_test_batch, 1), dtype=float)
+    test_acc = np.zeros((num_test_batch, 1), dtype=float)
+    y_p_all=[]
+    y_l_all=[]
+    idx=0;
+    result=0;
+    for ibatch, batch in enumerate(test_set):
+        if test_set[ibatch][0].shape[0]!=test_set_str[ibatch][0].shape[0]:
+            continue
+        print(test_bags_nm[ibatch])
+        #if(test_bags_nm[ibatch]!="ERICD-ARID2" or test_bags_nm[ibatch]!="TUG1-PET117"): continue
+        idx=idx+1
+        y_pred_keras = model.predict([test_lncRNA_set[ibatch][0], test_mRNA_set[ibatch][0], test_lncRNA_set_str[ibatch][0], test_mRNA_set_str[ibatch][0]]).ravel()
+        y_test=batch[1]
+        np.set_printoptions(threshold=sys.maxsize)
+        y_p_all.append(np.max(y_pred_keras))
+        y_l_all.append(np.max(y_test))
+        result = model.test_on_batch([test_lncRNA_set[ibatch][0], test_mRNA_set[ibatch][0] , test_lncRNA_set_str[ibatch][0], test_mRNA_set_str[ibatch][0] ], test_lncRNA_set[ibatch][1])
+        test_loss[ibatch] = result[0]
+        test_acc[ibatch] = result[1]
+        print(result)
+    return result
 
 
 def run_crf(epoch, score_map, bag_label, bag_index, co_exp_net_isoform, co_exp_net_lncRNA, training_size, testing_size, theta, sigma = 10):
@@ -283,11 +316,10 @@ def run_crf(epoch, score_map, bag_label, bag_index, co_exp_net_isoform, co_exp_n
     return label_update, theta_prime, pos_prob_crf, unary_potential, pairwise_potential
 
 
-
-def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+def extract_data(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
     train_bags = dataset['train']
     test_bags = dataset['test']
-    
+
     train_mRNA_bags = dataset['train_mRNA']
     test_mRNA_bags = dataset['test_mRNA']
     train_lncRNA_bags = dataset['train_lncRNA']
@@ -295,7 +327,7 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
 
     train_bags_nm = dataset['train_bags_nm']
     train_ins_nm = dataset['train_ins_nm']
-    test_bags_nm = dataset['test_bags_nm'] 
+    test_bags_nm = dataset['test_bags_nm']
     test_ins_nm = dataset['test_ins_nm']
 
 
@@ -318,30 +350,77 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
     train_lncRNA_set = convertToBatch(train_lncRNA_bags)
     test_lncRNA_set = convertToBatch(test_lncRNA_bags)
     train_set = convertToBatch(train_bags)
-    test_set = convertToBatch(test_bags)    
-    dimension = train_set[0][0].shape[0] 
-    
+    test_set = convertToBatch(test_bags)
+    dimension = train_set[0][0].shape[0]
+
     train_mRNA_set_str = convertToBatch(train_mRNA_bags_str)
     test_mRNA_set_str = convertToBatch(test_mRNA_bags_str)
     train_lncRNA_set_str = convertToBatch(train_lncRNA_bags_str)
     test_lncRNA_set_str = convertToBatch(test_lncRNA_bags_str)
     train_set_str = convertToBatch(train_bags_str)
-    test_set_str = convertToBatch(test_bags_str)    
+    test_set_str = convertToBatch(test_bags_str)
     dimension_str = train_set_str[0][0].shape[0]
-    
+
+    return train_bags,test_bags,train_mRNA_bags, test_mRNA_bags, train_lncRNA_bags, test_lncRNA_bags, train_bags_nm, train_ins_nm,test_bags_nm,test_ins_nm, 
+    train_bags_str, test_bags_str, train_mRNA_bags_str, test_mRNA_bags_str, train_lncRNA_bags_str, test_lncRNA_bags_str,
+    train_bags_nm_str, train_ins_nm_str, test_bags_nm_str, test_ins_nm_str,
+    train_mRNA_set, test_mRNA_set, train_lncRNA_set, test_lncRNA_set, train_set, test_set, dimension, 
+    train_mRNA_set_str, test_mRNA_set_str, train_lncRNA_set_str, test_lncRNA_set_str, train_set_str, test_set_str, dimension_str
+
+
+def deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+    train_bags = dataset['train']
+    test_bags = dataset['test']
+
+    train_mRNA_bags = dataset['train_mRNA']
+    test_mRNA_bags = dataset['test_mRNA']
+    train_lncRNA_bags = dataset['train_lncRNA']
+    test_lncRNA_bags = dataset['test_lncRNA']
+
+    train_bags_nm = dataset['train_bags_nm']
+    train_ins_nm = dataset['train_ins_nm']
+    test_bags_nm = dataset['test_bags_nm']
+    test_ins_nm = dataset['test_ins_nm']
+
+
+    train_bags_str = dataset_str['train']
+    test_bags_str = dataset_str['test']
+
+    train_mRNA_bags_str = dataset_str['train_mRNA']
+    test_mRNA_bags_str = dataset_str['test_mRNA']
+    train_lncRNA_bags_str = dataset_str['train_lncRNA']
+    test_lncRNA_bags_str = dataset_str['test_lncRNA']
+
+    train_bags_nm_str = dataset_str['train_bags_nm']
+    train_ins_nm_str = dataset_str['train_ins_nm']
+    test_bags_nm_str = dataset_str['test_bags_nm']
+    test_ins_nm_str = dataset_str['test_ins_nm']
+
+    # convert bag to batch
+    train_mRNA_set = convertToBatch(train_mRNA_bags)
+    test_mRNA_set = convertToBatch(test_mRNA_bags)
+    train_lncRNA_set = convertToBatch(train_lncRNA_bags)
+    test_lncRNA_set = convertToBatch(test_lncRNA_bags)
+    train_set = convertToBatch(train_bags)
+    test_set = convertToBatch(test_bags)
+    dimension = train_set[0][0].shape[0]
+
+    train_mRNA_set_str = convertToBatch(train_mRNA_bags_str)
+    test_mRNA_set_str = convertToBatch(test_mRNA_bags_str)
+    train_lncRNA_set_str = convertToBatch(train_lncRNA_bags_str)
+    test_lncRNA_set_str = convertToBatch(test_lncRNA_bags_str)
+    train_set_str = convertToBatch(train_bags_str)
+    test_set_str = convertToBatch(test_bags_str)
+    dimension_str = train_set_str[0][0].shape[0]
+
     model = model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len)
-    
-    ## Load model
-    model.load_weights('model_deepLPI.h5')
-    #model.save('testsave.h5')
-    #visulize_saliency(model, test_lncRNA_set[0][0], test_mRNA_set[0][0], test_lncRNA_set[0][1]) 
 
     # train model
     t1 = time.time()
     num_batch = len(train_set)
     all_auc=[]
     all_auprc=[]
-    iso_expr_data_all=get_expr_data("isoform_expression_data.txt")
+    iso_expr_data_all=get_expr_data("refseqid_isoform_expression.txt")
     lnc_expr_data_all=get_expr_data("lncRNA_expression_data.txt")
     lncRNA_feature_colum=188 #small dataset    
     for epoch in range(args.max_epoch):
@@ -372,16 +451,15 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
             for ins in train_ins_nm[ibatch]:
                 if lncRNA_name in lnc_expr_data_all:
                     lnc_expr_data.append(lnc_expr_data_all[lncRNA_name])
-                else: 
+                else:
                     lnc_expr_data.append([0] * lncRNA_feature_colum)
                 iso_expr_data.append(iso_expr_data_all[ins.encode('ascii','ignore').strip()])#nicodedata.normalize("NFKD", ins)])
 
-
         y_all=np.asarray(y_all, dtype=np.int)
-        
+
         #WGCNA for isoform expression data
-	iso_expr_data=np.asarray(iso_expr_data)
-        co_exp_net=np.corrcoef(iso_expr_data) 
+        iso_expr_data=np.asarray(iso_expr_data)
+        co_exp_net=np.corrcoef(iso_expr_data)
         # Set nan to be zero
         nan_where = np.isnan(co_exp_net)
         co_exp_net[nan_where] = 0
@@ -427,13 +505,80 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
             train_loss[ibatch] = result[0]
             train_acc[ibatch] = result[1]
             model, mean_train_loss, mean_train_acc = model, np.mean(train_loss), np.mean(train_acc)
-        
+    
+    return model
 
+def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+    train_bags = dataset['train']
+    test_bags = dataset['test']
+    
+    train_mRNA_bags = dataset['train_mRNA']
+    test_mRNA_bags = dataset['test_mRNA']
+    train_lncRNA_bags = dataset['train_lncRNA']
+    test_lncRNA_bags = dataset['test_lncRNA']
+
+    train_bags_nm = dataset['train_bags_nm']
+    train_ins_nm = dataset['train_ins_nm']
+    test_bags_nm = dataset['test_bags_nm'] 
+    test_ins_nm = dataset['test_ins_nm']
+
+
+    train_bags_str = dataset_str['train']
+    test_bags_str = dataset_str['test']
+
+    train_mRNA_bags_str = dataset_str['train_mRNA']
+    test_mRNA_bags_str = dataset_str['test_mRNA']
+    train_lncRNA_bags_str = dataset_str['train_lncRNA']
+    test_lncRNA_bags_str = dataset_str['test_lncRNA']
+
+    train_bags_nm_str = dataset_str['train_bags_nm']
+    train_ins_nm_str = dataset_str['train_ins_nm']
+    test_bags_nm_str = dataset_str['test_bags_nm']
+    test_ins_nm_str = dataset_str['test_ins_nm']
+
+    # convert bag to batch
+    train_mRNA_set = convertToBatch(train_mRNA_bags)
+    test_mRNA_set = convertToBatch(test_mRNA_bags)
+    train_lncRNA_set = convertToBatch(train_lncRNA_bags)
+    test_lncRNA_set = convertToBatch(test_lncRNA_bags)
+    train_set = convertToBatch(train_bags)
+    test_set = convertToBatch(test_bags)    
+    dimension = train_set[0][0].shape[0] 
+    
+    train_mRNA_set_str = convertToBatch(train_mRNA_bags_str)
+    test_mRNA_set_str = convertToBatch(test_mRNA_bags_str)
+    train_lncRNA_set_str = convertToBatch(train_lncRNA_bags_str)
+    test_lncRNA_set_str = convertToBatch(test_lncRNA_bags_str)
+    train_set_str = convertToBatch(train_bags_str)
+    test_set_str = convertToBatch(test_bags_str)    
+    dimension_str = train_set_str[0][0].shape[0]
+
+    
+    model = model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len)
+    
+    ## Load model
+    model.load_weights('model_deepLPI.h5')
+    #model.save('testsave.h5')
+    #visulize_saliency(model, test_lncRNA_set[0][0], test_mRNA_set[0][0], test_lncRNA_set[0][1]) 
+
+    # train model
+    t1 = time.time()
+    num_batch = len(train_set)
+    all_auc=[]
+    all_auprc=[]
+    iso_expr_data_all=get_expr_data("refseqid_isoform_expression.txt")
+    lnc_expr_data_all=get_expr_data("lncRNA_expression_data.txt")
+    lncRNA_feature_colum=188 #small dataset    
+    
+    model=deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len)
+    
+    #model.save('model_deepLPI2.h5')
+    
+    for epoch in range(args.max_epoch):
         #Testing
         test_loss, test_acc, test_auc, test_auprc = test_deepLPI(model, test_set, test_mRNA_set, test_lncRNA_set, test_set_str, test_mRNA_set_str, test_lncRNA_set_str, test_bags_nm, test_ins_nm)
         all_auc.append(test_auc)
         all_auprc.append(test_auprc)
-        #print 'epoch=', epoch, '  train_loss= {:.3f}'.format(mean_train_loss), '  train_acc= {:.3f}'.format(mean_train_acc), '  test_loss={:.3f}'.format(test_loss), '  test_acc= {:.3f}'.format(test_acc)
     
     
     t2 = time.time()
@@ -448,16 +593,105 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
     
     return test_acc, np.mean(all_auc), np.mean(all_auprc)
 
+bagname=[]
 
 
+def deepLPI_unit(dataset, dataset_str, bagdict, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+    train_bags = dataset['train']
+    test_bags = dataset['test']
+
+    train_mRNA_bags = dataset['train_mRNA']
+    test_mRNA_bags = dataset['test_mRNA']
+    train_lncRNA_bags = dataset['train_lncRNA']
+    test_lncRNA_bags = dataset['test_lncRNA']
+
+    train_bags_nm = dataset['train_bags_nm']
+    train_ins_nm = dataset['train_ins_nm']
+    test_bags_nm = dataset['test_bags_nm']
+    test_ins_nm = dataset['test_ins_nm']
 
 
+    train_bags_str = dataset_str['train']
+    test_bags_str = dataset_str['test']
 
-if __name__ == '__main__':
-    #def main_prog():
-    args = parse_args()
+    train_mRNA_bags_str = dataset_str['train_mRNA']
+    test_mRNA_bags_str = dataset_str['test_mRNA']
+    train_lncRNA_bags_str = dataset_str['train_lncRNA']
+    test_lncRNA_bags_str = dataset_str['test_lncRNA']
 
-    # perform five times 10-fold cross-validation experiments
+    train_bags_nm_str = dataset_str['train_bags_nm']
+    train_ins_nm_str = dataset_str['train_ins_nm']
+    test_bags_nm_str = dataset_str['test_bags_nm']
+    test_ins_nm_str = dataset_str['test_ins_nm']
+
+    # convert bag to batch
+    train_mRNA_set = convertToBatch(train_mRNA_bags)
+    test_mRNA_set = convertToBatch(test_mRNA_bags)
+    train_lncRNA_set = convertToBatch(train_lncRNA_bags)
+    test_lncRNA_set = convertToBatch(test_lncRNA_bags)
+    train_set = convertToBatch(train_bags)
+    test_set = convertToBatch(test_bags)
+    dimension = train_set[0][0].shape[0]
+
+    train_mRNA_set_str = convertToBatch(train_mRNA_bags_str)
+    test_mRNA_set_str = convertToBatch(test_mRNA_bags_str)
+    train_lncRNA_set_str = convertToBatch(train_lncRNA_bags_str)
+    test_lncRNA_set_str = convertToBatch(test_lncRNA_bags_str)
+    train_set_str = convertToBatch(train_bags_str)
+    test_set_str = convertToBatch(test_bags_str)
+    dimension_str = train_set_str[0][0].shape[0]
+    
+
+    
+    idx=0
+    for ibatch, batch in enumerate(test_set):
+        if test_set[ibatch][0].shape[0]!=test_set_str[ibatch][0].shape[0]:
+            continue
+        idx=idx+1
+        bagdict[test_bags_nm[ibatch].encode('ascii','ignore').strip()]=([test_lncRNA_set[ibatch][0], test_mRNA_set[ibatch][0], test_lncRNA_set_str[ibatch][0], test_mRNA_set_str[ibatch][0]], test_lncRNA_set[ibatch][1])
+        bagname.append(test_bags_nm[ibatch].encode('ascii','ignore').strip())
+    idx=0
+    for ibatch, batch in enumerate(train_set):
+        if train_set[ibatch][0].shape[0]!=train_set_str[ibatch][0].shape[0]:
+            continue
+        idx=idx+1
+        bagdict[train_bags_nm[ibatch].encode('ascii','ignore').strip()]=([train_lncRNA_set[ibatch][0], train_mRNA_set[ibatch][0], train_lncRNA_set_str[ibatch][0], train_mRNA_set_str[ibatch][0]], test_lncRNA_set[ibatch][1])
+        bagname.append(train_bags_nm[ibatch].encode('ascii','ignore').strip())
+
+    return bagdict
+
+
+def loadmodel(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+    model = model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len)
+    model.load_weights('model_deepLPI.h5')
+    return model
+
+def interactiontest(args):
+    dataset = load_dataset(args.dataset, 2, args.lncRNA_len, args.mRNA_len)
+    dataset_struct = load_dataset(args.dataset_struct, 2, args.lncRNA_len, args.mRNA_len)
+    
+    bagdict={}
+    for ifold in range(n_folds):
+        bagdict = deepLPI_unit(dataset[ifold], dataset_struct[ifold], bagdict, args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
+
+    model=loadmodel(args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
+    #name="TUG1-PET117"
+    interaction="MALAT1-TMEM69"
+    interaction="TUG1-EHD2"
+    interaction='MALAT1-ANKRD1' #'Interacted pair')
+    interaction='TUG1-BTG3'     #'Interacted pair')
+    interaction=args.interaction
+    try:
+        result = model.test_on_batch(bagdict[interaction][0], bagdict[interaction][1])
+    except:
+        return 
+    unit_pred=result[0]
+    if(unit_pred>0.5): print(interaction, " : Interacted pair")
+    else: print(interaction, " : Non-interacted pair")
+
+
+def train(args):
+    #perform cross-validation experiments
     run = 1
     n_folds = 5#10
     acc = np.zeros((run, n_folds), dtype=float)
@@ -472,4 +706,19 @@ if __name__ == '__main__':
     print 'auc = ', np.mean(auc)
     print 'prauc= ', np.mean(prauc)
 
+
+if __name__ == '__main__':
+    #def main_prog():
+    args = parse_args()
+    
+    #unit_test
+    n_folds=5
+    dataset = load_dataset(args.dataset, n_folds, args.lncRNA_len, args.mRNA_len)
+    dataset_struct = load_dataset(args.dataset_struct, n_folds, args.lncRNA_len, args.mRNA_len)
+    
+    if(args.intersection=='NULL'):
+        train(args)
+    else 
+        interactiontest(args)
+    
 
