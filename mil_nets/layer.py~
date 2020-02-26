@@ -239,7 +239,6 @@ class Score_pooling(Layer):
         #print("\n\n\nconfig\n\n\n")
         config = {
             'output_dim': self.output_dim,
-            #'kernel_initializer': initializers.serialize(self.kernel.initializer),
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': regularizers.serialize(self.bias_regularizer),

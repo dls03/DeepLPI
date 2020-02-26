@@ -25,9 +25,7 @@ def load_dataset(dataset_nm, n_folds, lncRNA_len, mRNA_len):
     else:
         bags_nm = data['x']['ident'][0,0]['milbag'][0,0][:,0]
     bags_label = data['x']['nlab'][0,0][:,0] #- 1
-    
-    #print(bags_nm)
-    #print(bags_label)
+
     # L2 norm for musk1 and musk2
     #if dataset_nm.startswith('newsgroups') is False:
     #    mean_fea = np.mean(ins_fea, axis=0, keepdims=True)+1e-6
@@ -48,27 +46,6 @@ def load_dataset(dataset_nm, n_folds, lncRNA_len, mRNA_len):
     for id, bag_nm in enumerate(bags_nm):
         if ins_name_of_input.has_key(bag_nm): ins_name_of_input[bag_nm].append(genes_nm[id])
         else:                                 ins_name_of_input[bag_nm] = [genes_nm[id]]
-
-
-    #for i in range(len(bags_label)):
-    #    ibag_name=bags_nm[i].encode('ascii','ignore').strip()
-    #	size=len(ins_name_of_input[bags_nm[i]])
-    #    if len(ibag_name.split('-'))>2:
-    #        lncRNA_name=ibag_name.split('-')[0]+'-'+ibag_name.split('-')[1]
-    #        mRNA_name=ibag_name.split('-')[2]
-    #    else:
-    #        lncRNA_name=ibag_name.split('-')[0]
-    #        mRNA_name=ibag_name.split('-')[1]
-    #
-    #    if bags_label[i]==1:
-    #        with open('interaction.txt', 'a+') as file:
-    #            file.write(lncRNA_name+"\t"+mRNA_name+"\t"+str(size)+"\n")
-    #    else:
-    #        with open('non_interaction.txt', 'a+') as nfile:
-    #            nfile.write(lncRNA_name+"\t"+mRNA_name+"\t"+str(size)+"\n")
-    #print(bags_nm)
-    #print(bags_label)
-    
     bags_fea = []
     bags_name = []
     bags_lncRNA_fea = []
@@ -91,25 +68,30 @@ def load_dataset(dataset_nm, n_folds, lncRNA_len, mRNA_len):
         bags_name.append(bag_nm)
 
     # random select 90% bags as train, others as test
-    num_bag = len(bags_fea)
-    print(num_bag)
+    n = len(bags_fea)
+    print(n)
     #print(bags_label.sum())
     #print(bags_label.shape)
-    kf = KFold(num_bag, n_folds=n_folds, shuffle=True, random_state=0)
+    kf = KFold(n, n_folds=n_folds, shuffle=True, random_state=0)
     datasets = []
     for train_idx, test_idx in kf:
-        dataset = {}
-        #print(train_idx)
+        dataset={}
+        #dataset['train'] = [bags_fea[ibag] for ibag in range(n)]
+        #dataset['train_lncRNA'] = [bags_lncRNA_fea[ibag] for ibag in range(n)]
+        #dataset['train_mRNA'] = [bags_mRNA_fea[ibag] for ibag in range(n)]
+        #dataset['train_bags_nm'] = [bags_name[ibag] for ibag in range(n)]
+        #dataset['train_ins_nm'] = [ins_name_of_input[bags_name[ibag]] for ibag in range(n)]
         dataset['train'] = [bags_fea[ibag] for ibag in train_idx]
         dataset['train_lncRNA'] = [bags_lncRNA_fea[ibag] for ibag in train_idx]
         dataset['train_mRNA'] = [bags_mRNA_fea[ibag] for ibag in train_idx]
         dataset['train_bags_nm'] = [bags_name[ibag] for ibag in train_idx]
-        dataset['train_ins_nm'] = [ins_name_of_input[bags_name[ibag]] for ibag in train_idx]
-        #print(test_idx)
+        dataset['train_ins_nm'] = [ins_name_of_input[bags_name[ibag]] for ibag in train_idx]        
+        print(test_idx)
         dataset['test'] = [bags_fea[ibag] for ibag in test_idx]
         dataset['test_lncRNA'] = [bags_lncRNA_fea[ibag] for ibag in test_idx]
         dataset['test_mRNA'] = [bags_mRNA_fea[ibag] for ibag in test_idx]
         dataset['test_bags_nm'] = [bags_name[ibag] for ibag in test_idx]
         dataset['test_ins_nm'] = [ins_name_of_input[bags_name[ibag]] for ibag in test_idx] 
+        print(dataset['test_bags_nm'])
         datasets.append(dataset)
     return datasets

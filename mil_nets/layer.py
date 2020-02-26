@@ -201,25 +201,45 @@ class Score_pooling(Layer):
         self.input_built = True
 
     def call(self, x, mask=None):
+        #print("\n\n\ncall\n\n\n", x.shape)
         n, d = x.shape
+        #print(n,d)
+        # compute instance-level score
         x = K.dot(x, self.kernel)
         if self.use_bias:
             x = K.bias_add(x, self.bias)
+        
+        #print("x shape", x.shape)
+	# sigmoid
         x = K.sigmoid(x)
 	
+        #print("\n\n\ninstance-level score:",x)
+        #sess = tf.InteractiveSession()
+        #a=tf.Print(x, [x], message="This is a: ")
+        #print("\n\n\n")
+        #layer_name = 'x'
+        
+        #instance_level_score = Model(inputs=model.input, outputs=model.get_layer(layer_name).output)
+        #ins_score = instance_level_score.predict()
+        #print(ins_score)
+        
         # do-pooling operator
         output = pooling.choice_pooling(x, self.pooling_mode)
+	#print("\n\n\n output shape \n\n\n", output.shape)
         return x
 	
     def compute_output_shape(self, input_shape):
+        #print("\n\n\noutput_shape\n\n\n")
         shape = list(input_shape)
         assert len(shape) == 2
         shape[1] = self.output_dim
         return tuple(shape)
 
     def get_config(self):
+        #print("\n\n\nconfig\n\n\n")
         config = {
             'output_dim': self.output_dim,
+            #'kernel_initializer': initializers.serialize(self.kernel.initializer),
             'bias_initializer': initializers.serialize(self.bias_initializer),
             'kernel_regularizer': regularizers.serialize(self.kernel_regularizer),
             'bias_regularizer': regularizers.serialize(self.bias_regularizer),
