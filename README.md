@@ -23,7 +23,7 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
   - A mini example of lncRNA expression data
 - isoform_expression_data.txt
   - A mini example of isoform expression data
-- The full datasets used in the paper can be found at [here](https://drive.google.com/drive/folders/1qWZq4pKoPJj6u_pbNgKAm_zodxpPxD9S?usp=sharing).
+- The full datasets used in the paper can be found [here](https://drive.google.com/drive/folders/1qWZq4pKoPJj6u_pbNgKAm_zodxpPxD9S?usp=sharing).
 
 
 ### Prediction using DeepLPI:
