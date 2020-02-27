@@ -16,20 +16,22 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
 
 
 ### Data:
-- dataset/
-  - Contain the merged data of lncRNAs and proteins
+- dataset
+  - The merged sequence data of lncRNAs and protein isoforms
+  - The merged structural data of lncRNAs and protein isoforms
 - lncRNA_expression_data.txt
-  - lncRNA expression data small version
+  - A mini example of lncRNA expression data
 - isoform_expression_data.txt
-  - isoform expression data small version
+  - A mini example of isoform expression data
+- The full datasets used in the paper can be found at 
 
 
-### Prediction using deepLPI:
-- Run the script ./demo.sh to generate predictions for the test data. You can change the interaction pair in this script to another one with a pre-trained model.
-- The output will report the prediction result of query interaction. 
+### Prediction using DeepLPI:
+- Run the script in ./demo.sh to generate the prediction for a candidate interaction pair based on a pre-trained model. The first two arguments in the script can be found in the above datasets. You may replace the interaction pair in this script by another one.
+- The output contains the predicted result for the queried interaction. 
 
-### Train deepLPI:
-- Run the script ./train.sh for training new model. You can change the dataset in the script to another one.
+### Training DeepLPI:
+- Run the script in ./train.sh to train a new model. Again, the arguments can be found in the above datasets. You may replace the datasets in the script by others to train a different model.
 - The output will report the average performance in terms of AUC and AUPRC, over 5-fold cross validation.
 
 
