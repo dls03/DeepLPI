@@ -6,23 +6,21 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
 
 
 ### Dependencies: 
-- [Python 2.7.5](https://www.python.org/downloads/release/python-275/)
-- [Keras](https://keras.io/)
-- [TensorFlow](https://keras.io/backend/)
+- [Python>=2.7.5](https://www.python.org/downloads/release/python-275/)
+- [Keras>=2.0.2](https://keras.io/)
+- [TensorFlow>=1.1.0](https://keras.io/backend/)
 - [MINNs](https://github.com/yanyongluan/MINNs)
-- [SciPy](https://www.scipy.org/)
-- [NumPy](https://numpy.org/)
-- [pandas](https://pandas.pydata.org/)
+- [SciPy>=1.0.0](https://www.scipy.org/)
+- [NumPy>=1.14.0](https://numpy.org/)
+- [pandas>=0.22.0](https://pandas.pydata.org/)
 
 
 ### Data:
-- dataset
-  - The merged sequence data of lncRNAs and protein isoforms
-  - The merged structural data of lncRNAs and protein isoforms
-- lncRNA_expression_data.txt
-  - A mini example of lncRNA expression data
-- isoform_expression_data.txt
-  - A mini example of isoform expression data
+- Sampled input data are placed under Dataset folder
+  - The merged sequence data of lncRNAs and protein isoforms generated using lncRNA_mRNA_.py 
+  - The merged structural data of lncRNAs and protein isoforms generated using lncRNA_mRNA_.py
+  - lncRNA_expression_data.txt: a mini example of lncRNA expression data
+  - isoform_expression_data.txt: a mini example of isoform expression data
 - The full datasets used in the paper can be found [here](https://drive.google.com/drive/folders/1qWZq4pKoPJj6u_pbNgKAm_zodxpPxD9S?usp=sharing).
 
 
