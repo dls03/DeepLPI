@@ -144,6 +144,7 @@ def model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
     encoded_a1 = Embedding(input_dim=4096, output_dim=64)(tweet_a)
     encoded_a1 = Convolution1D(filters = 4, kernel_size = 32, strides = 1,  padding = 'valid', activation = 'relu')(encoded_a1)
     encoded_a1 = MaxPooling1D(pool_size=4, strides=None, padding='valid')(encoded_a1)
+    encoded_a1 = Dropout(0.2)(encoded_a1)
     encoded_a1 = LSTM(32, return_sequences=True)(encoded_a1)
 
     tweet_b = Input(shape=(mRNA_len,))
@@ -151,16 +152,19 @@ def model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
     encoded_b1 = Reshape((lncRNA_len,64*(mRNA_len/lncRNA_len)))(encoded_b1)
     encoded_b1 = Convolution1D(filters = 4, kernel_size = 32, strides = 1,  padding = 'valid', activation = 'relu')(encoded_b1)
     encoded_b1 = MaxPooling1D(pool_size=4, strides=None, padding='valid')(encoded_b1)
+    encoded_b1 = Dropout(0.2)(encoded_b1)
     encoded_b1 = LSTM(32, return_sequences=True)(encoded_b1)
     
     tweet_c = Input(shape=(lncRNA_struct_len,6))
     encoded_c1 = Convolution1D(4, kernel_size = 32, strides = 1, padding = 'valid', activation = 'relu')(tweet_c)
     encoded_c1 = MaxPooling1D(pool_size=4, strides=None, padding='valid')(encoded_c1)
+    encoded_c1 = Dropout(0.2)(encoded_c1)
     encoded_c1 = LSTM(32, return_sequences=True)(encoded_c1)
     
     tweet_d = Input(shape=(mRNA_struct_len,6))
     encoded_d1 = Convolution1D(4, kernel_size = 32, strides = 1, padding = 'valid', activation = 'relu')(tweet_d)
     encoded_d1 = MaxPooling1D(pool_size=4, strides=None, padding='valid')(encoded_d1)
+    encoded_d1 = Dropout(0.2)(encoded_d1)
     encoded_d1 = LSTM(32, return_sequences=True)(encoded_d1)
 
     merged_vector_lnc = keras.layers.concatenate([encoded_a1, encoded_c1], axis=-1, name='merged_vector_lnc')
@@ -177,8 +181,10 @@ def model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
     #sp = Activation('sigmoid')(sp)
     model = Model(inputs=[tweet_a, tweet_b, tweet_c, tweet_d], outputs=[sp])
     #model.summary()
-    sgd = SGD(lr=args.init_lr, decay=1e-4, momentum=args.momentum, nesterov=True)
-    model.compile(loss=bag_loss, optimizer=sgd, metrics=[bag_accuracy])
+    #sgd = SGD(lr=args.init_lr, decay=1e-4, momentum=args.momentum, nesterov=True)
+    #model.compile(loss=bag_loss, optimizer=sgd, metrics=[bag_accuracy])
+    nadam=optimizers.Nadam(lr=0.002, beta_1=0.9, beta_2=0.999)
+    model.compile(loss=bag_loss, optimizer=nadam, metrics=[bag_accuracy])
     return model
 
 
@@ -414,8 +420,8 @@ def deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len,
     num_batch = len(train_set)
     all_auc=[]
     all_auprc=[]
-    iso_expr_data_all=get_expr_data("isoform_expression_data.txt")
-    lnc_expr_data_all=get_expr_data("lncRNA_expression_data.txt")
+    iso_expr_data_all=get_expr_data("./dataset/isoform_expression_data.txt")
+    lnc_expr_data_all=get_expr_data("./dataset/lncRNA_expression_data.txt")
     lncRNA_feature_colum=188 #small dataset    
     for epoch in range(args.max_epoch):
         #Training
