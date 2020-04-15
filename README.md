@@ -17,8 +17,8 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
 
 ### Data:
 - Sampled input data are placed under Dataset folder
-  - The merged sequence data of lncRNAs and protein isoforms generated using lncRNA_mRNA_.py 
-  - The merged structural data of lncRNAs and protein isoforms generated using lncRNA_mRNA_.py
+  - The merged sequence data of lncRNAs and protein isoforms generated using lncRNA_mRNA.py 
+  - The merged structural data of lncRNAs and protein isoforms generated using lncRNA_mRNA_structure.py
   - lncRNA_expression_data.txt: a mini example of lncRNA expression data
   - isoform_expression_data.txt: a mini example of isoform expression data
 - The full datasets used in the paper can be found [here](https://drive.google.com/drive/folders/1qWZq4pKoPJj6u_pbNgKAm_zodxpPxD9S?usp=sharing).
