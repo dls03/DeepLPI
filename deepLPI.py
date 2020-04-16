@@ -211,7 +211,7 @@ def parse_args():
                         default=0.9, type=float)
     parser.add_argument('--epoch', dest='max_epoch',
                         help='number of epoch to train',
-                        default=10, type=int)
+                        default=50, type=int)
     parser.add_argument('--lncRNA_len', dest='lncRNA_len',
                         help='length of lncRNA',
                         default=300, type=int)
@@ -227,6 +227,9 @@ def parse_args():
     parser.add_argument('--interaction', dest='interaction',
                         help='lncRNA-mRNA pair',
                         default='NULL', type=str)
+    parser.add_argument('--pre_trained_weight', dest='pre_trained_weight',
+                        help='pre-trained weight file',
+                        default='model_deepLPI.h5', type=str)
 
     if len(sys.argv) == 1:
         parser.print_help()
@@ -508,7 +511,7 @@ def deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len,
     
     return model
 
-def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len, pre_trained_weight):
     train_bags = dataset['train']
     test_bags = dataset['test']
     
@@ -567,8 +570,8 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
     all_auprc=[]
     
     model=deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len) 
-    model.load_weights('model_deepLPI.h5')
-    
+    #model.load_weights('model_deepLPI.h5')
+    model.load_weights(pre_trained_weight)
     for epoch in range(1):
         test_loss, test_acc, test_auc, test_auprc = test_deepLPI(model, test_set, test_mRNA_set, test_lncRNA_set, test_set_str, test_mRNA_set_str, test_lncRNA_set_str, test_bags_nm, test_ins_nm)
         all_auc.append(test_auc)
@@ -648,9 +651,10 @@ def deepLPI_unit(dataset, dataset_str, bagdict, lncRNA_len, mRNA_len, lncRNA_str
     return bagdict
 
 
-def loadmodel(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len):
+def loadmodel(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len, pre_trained_weight):
     model = model_func(lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len)
-    model.load_weights('model_deepLPI.h5')
+    #model.load_weights('model_deepLPI.h5')
+    model.load_weights(pre_trained_weight)
     return model
 
 def interactiontest(args):
@@ -661,7 +665,7 @@ def interactiontest(args):
     for ifold in range(2):
         bagdict = deepLPI_unit(dataset[ifold], dataset_struct[ifold], bagdict, args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
 
-    model=loadmodel(args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
+    model=loadmodel(args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len, args.pre_trained_weight)
     #name="TUG1-PET117"
     interaction="MALAT1-TMEM69"
     interaction="TUG1-EHD2"
@@ -691,7 +695,7 @@ def train(args):
         dataset_struct = load_dataset(args.dataset_struct, n_folds, args.lncRNA_len, args.mRNA_len)
         for ifold in range(n_folds):
             print 'run=', irun, '  fold=', ifold
-            acc[irun][ifold], auc[irun][ifold], prauc[irun][ifold] = deepLPI(dataset[ifold], dataset_struct[ifold],  args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len)
+            acc[irun][ifold], auc[irun][ifold], prauc[irun][ifold] = deepLPI(dataset[ifold], dataset_struct[ifold],  args.lncRNA_len, args.mRNA_len,  args.lncRNA_struct_len, args.mRNA_struct_len, args.pre_trained_weight)
     print 'auc = ', np.mean(auc)
     print 'prauc= ', np.mean(prauc)
 
