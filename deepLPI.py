@@ -569,8 +569,9 @@ def deepLPI(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_
     all_auc=[]
     all_auprc=[]
     
+    model=deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len)
     model.load_weights(pre_trained_weight)
-    model=deepLPI_train(dataset, dataset_str, lncRNA_len, mRNA_len, lncRNA_struct_len, mRNA_struct_len) 
+     
     
     for epoch in range(1):
         test_loss, test_acc, test_auc, test_auprc = test_deepLPI(model, test_set, test_mRNA_set, test_lncRNA_set, test_set_str, test_mRNA_set_str, test_lncRNA_set_str, test_bags_nm, test_ins_nm)
