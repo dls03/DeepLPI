@@ -32,6 +32,8 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
 - Run the script ./train.sh to train a new model. Again, the arguments can be found in the above datasets. You may replace the datasets in the script by others to train a different model.
 - The output will report the average performance in terms of AUC and AUPRC, over 5-fold cross validation.
 
+### Miscellaneous
+- Pseudo model and random model performance: performance_of_pseudo_and_random_model.py
 
 
 
