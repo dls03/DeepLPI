@@ -35,8 +35,21 @@ Long non-coding RNAs (lncRNAs) regulate diverse biological processes via interac
 ### Miscellaneous
 - Pseudo model and random model performance: performance_of_pseudo_and_random_model.py
 
+### Citation
+If you find DeepLPI is useful for your research, please consider citing the following paper:
 
-
+```
+@article{shaw2021deeplpi,
+  title={DeepLPI: a multimodal deep learning method for predicting the interactions between lncRNAs and protein isoforms},
+  author={Shaw, Dipan and Chen, Hao and Xie, Minzhu and Jiang, Tao},
+  journal={BMC bioinformatics},
+  volume={22},
+  number={1},
+  pages={1--22},
+  year={2021},
+  publisher={BioMed Central}
+}
+```
 
 
 
